@@ -7,6 +7,9 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/fantasy-versus/utils/contextkeys"
+	"github.com/fantasy-versus/utils/types"
 )
 
 type LogFormat uint8
@@ -128,6 +131,8 @@ func _funcName(pc uintptr) string {
 func _logF(ctx *context.Context, pc uintptr, ok bool, level LogLevelValue, str string, currentLogLevel LogLevelValue, v ...any) {
 	var color int
 	var name string
+	var user types.SqlUuid
+	var userOk bool
 	if ok {
 		name = _funcName(pc)
 	}
@@ -152,6 +157,13 @@ func _logF(ctx *context.Context, pc uintptr, ok bool, level LogLevelValue, str s
 		Message:   fmt.Sprintf(str, v...),
 		Env:       Environment,
 	}
+	if ctx != nil {
+		if user, userOk = (*ctx).Value(contextkeys.CtxKeyUser).(types.SqlUuid); userOk {
+			l.User = user.String()
+		}
+
+	}
+
 	logEntryBytes, _ := json.Marshal(l)
 
 	if level >= currentLogLevel {
