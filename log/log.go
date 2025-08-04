@@ -1,10 +1,22 @@
 package log
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"runtime"
 	"strings"
+	"time"
 )
+
+type LogFormat uint8
+
+const (
+	RAW LogFormat = iota
+	JSON
+)
+
+var Format LogFormat = RAW
 
 type LogLevelValue uint8
 
@@ -18,6 +30,24 @@ const (
 )
 
 var levelNames []string = []string{"TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"}
+
+type LogEntry struct {
+	Timestamp  string  `json:"timestamp"`
+	Level      string  `json:"level"`
+	RequestID  string  `json:"request_id,omitempty"`
+	Caller     string  `json:"caller,omitempty"`
+	User       string  `json:"user,omitempty"`
+	Method     string  `json:"method,omitempty"`
+	Path       string  `json:"path,omitempty"`
+	Status     int     `json:"status,omitempty"`
+	IP         string  `json:"ip,omitempty"`
+	DurationMS float64 `json:"duration_ms,omitempty"`
+	App        string  `json:"app,omitempty"`
+	Env        string  `json:"env,omitempty"`
+	Message    string  `json:"message"`
+}
+
+var Environment string
 
 func init() {
 	SetFlags(LstdFlags | Lmicroseconds)
@@ -44,50 +74,50 @@ var LogLevel LogLevelValue = ERROR
 // any is an alias for interface{} and is equivalent to interface{} in all ways.
 type any = interface{}
 
-func Tracef(str string, v ...any) {
-	logF(TRACE, str, v...)
+func Tracef(ctx *context.Context, str string, v ...any) {
+	logF(ctx, TRACE, str, v...)
 }
 
-func Traceln(v ...any) {
-	logN(TRACE, v...)
+func Traceln(ctx *context.Context, v ...any) {
+	logN(ctx, TRACE, v...)
 }
-func Debugf(str string, v ...any) {
-	logF(DEBUG, str, v...)
-}
-
-func Debugln(v ...any) {
-	logN(DEBUG, v...)
-}
-func Infof(str string, v ...any) {
-	logF(INFO, str, v...)
+func Debugf(ctx *context.Context, str string, v ...any) {
+	logF(ctx, DEBUG, str, v...)
 }
 
-func Infoln(v ...any) {
-	logN(INFO, v...)
+func Debugln(ctx *context.Context, v ...any) {
+	logN(ctx, DEBUG, v...)
+}
+func Infof(ctx *context.Context, str string, v ...any) {
+	logF(ctx, INFO, str, v...)
 }
 
-func Warnf(str string, v ...any) {
-	logF(WARN, str, v...)
+func Infoln(ctx *context.Context, v ...any) {
+	logN(ctx, INFO, v...)
 }
 
-func Warnln(v ...any) {
-	logN(WARN, v...)
+func Warnf(ctx *context.Context, str string, v ...any) {
+	logF(ctx, WARN, str, v...)
+}
+
+func Warnln(ctx *context.Context, v ...any) {
+	logN(ctx, WARN, v...)
 }
 func Fatal(v ...any) {
 	fatal(v...)
 }
 
-func Errorf(str string, v ...any) {
-	logF(ERROR, str, v...)
+func Errorf(ctx *context.Context, str string, v ...any) {
+	logF(ctx, ERROR, str, v...)
 }
 
-func Errorln(v ...any) {
-	logN(ERROR, v...)
+func Errorln(ctx *context.Context, v ...any) {
+	logN(ctx, ERROR, v...)
 }
 
-func logF(level LogLevelValue, str string, v ...any) {
+func logF(ctx *context.Context, level LogLevelValue, str string, v ...any) {
 	pc, _, _, ok := runtime.Caller(2)
-	_logF(pc, ok, level, str, LogLevel, v...)
+	_logF(ctx, pc, ok, level, str, LogLevel, v...)
 }
 
 func _funcName(pc uintptr) string {
@@ -95,7 +125,7 @@ func _funcName(pc uintptr) string {
 	return name[strings.LastIndex(name, "/")+1:]
 }
 
-func _logF(pc uintptr, ok bool, level LogLevelValue, str string, currentLogLevel LogLevelValue, v ...any) {
+func _logF(ctx *context.Context, pc uintptr, ok bool, level LogLevelValue, str string, currentLogLevel LogLevelValue, v ...any) {
 	var color int
 	var name string
 	if ok {
@@ -113,20 +143,36 @@ func _logF(pc uintptr, ok bool, level LogLevelValue, str string, currentLogLevel
 		color = Yellow
 	case INFO:
 		color = Green
-
 	}
 
+	l := &LogEntry{
+		Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+		Level:     levelNames[level],
+		Caller:    name,
+		Message:   fmt.Sprintf(str, v...),
+		Env:       Environment,
+	}
+	logEntryBytes, _ := json.Marshal(l)
+
 	if level >= currentLogLevel {
-		printf(Colourize(fmt.Sprintf("%-5s [%s] %s", levelNames[level], name, str), color), v...)
+		if Format == RAW {
+			printf(Colourize(fmt.Sprintf("%-5s [%s] %s", levelNames[level], name, str), color), v...)
+
+		} else {
+			kk := []interface{}{fmt.Sprintf("%-5s ", levelNames[level]), string(logEntryBytes)}
+
+			println(color, kk...)
+
+		}
 	}
 }
 
-func logN(level LogLevelValue, v ...any) {
+func logN(ctx *context.Context, level LogLevelValue, v ...any) {
 	pc, _, _, ok := runtime.Caller(2)
-	_logN(pc, ok, level, LogLevel, v...)
+	_logN(ctx, pc, ok, level, LogLevel, v...)
 }
 
-func _logN(pc uintptr, ok bool, level LogLevelValue, currentLogLevel LogLevelValue, v ...any) {
+func _logN(ctx *context.Context, pc uintptr, ok bool, level LogLevelValue, currentLogLevel LogLevelValue, v ...any) {
 	var color int
 	var name string
 	if ok {
@@ -146,19 +192,36 @@ func _logN(pc uintptr, ok bool, level LogLevelValue, currentLogLevel LogLevelVal
 		color = Green
 
 	}
-	if level >= currentLogLevel {
-		kk := []interface{}{fmt.Sprintf("%-5s ", levelNames[level]), fmt.Sprintf("[%s] ", name)}
 
-		kk = append(kk, v...)
+	if level >= currentLogLevel {
+		var kk []interface{}
+		if Format == JSON {
+			l := &LogEntry{
+				Timestamp: time.Now().UTC().Format(time.RFC3339Nano),
+				Level:     levelNames[level],
+				Caller:    name,
+				Message:   fmt.Sprint(v...),
+				Env:       Environment,
+			}
+			logEntryBytes, _ := json.Marshal(l)
+
+			kk = []interface{}{fmt.Sprintf("%-5s ", levelNames[level]), string(logEntryBytes)}
+
+		} else {
+			kk = []interface{}{fmt.Sprintf("%-5s ", levelNames[level]), fmt.Sprintf("[%s] ", name), v}
+
+			// kk = append(kk, v...)
+		}
+
 		println(color, kk...)
 	}
 }
-func Println(v ...any) {
-	logN(INFO, v...)
+func Println(ctx *context.Context, v ...any) {
+	logN(ctx, INFO, v...)
 }
 
 // Printf calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Printf.
-func Printf(format string, v ...any) {
-	logF(INFO, format, v...)
+func Printf(ctx *context.Context, format string, v ...any) {
+	logF(ctx, INFO, format, v...)
 }

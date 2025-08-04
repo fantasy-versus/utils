@@ -56,13 +56,13 @@ func (j *JwtProps) Setup() {
 
 	verifyKey, err = jwt.ParseRSAPublicKeyFromPEM(*j.PublicKey)
 	if err != nil {
-		log.Errorf("JWT Verification key is required, please check Public Key is present and it is well formed: %+v", err)
+		log.Errorf(nil, "JWT Verification key is required, please check Public Key is present and it is well formed: %+v", err)
 
 		panic(err)
 	}
 
 	if j.DbConnection == nil && j.ValidateUrl == nil {
-		log.Errorln("Database connection or api request to validate token is required")
+		log.Errorln(nil, "Database connection or api request to validate token is required")
 		panic("Database connection or api request to validate token is required")
 	}
 	if j.DbConnection != nil {
@@ -71,7 +71,7 @@ func (j *JwtProps) Setup() {
 	if j.ValidateUrl != nil {
 		_, err := url.ParseRequestURI(*j.ValidateUrl)
 		if err != nil {
-			log.Errorf("Invalid validation url. {%s}", err.Error())
+			log.Errorf(nil, "Invalid validation url. {%s}", err.Error())
 			panic("Invalid validation url.")
 		}
 		validateUrl = j.ValidateUrl
@@ -201,7 +201,7 @@ func VerifyTokenWityIP(dbTokenValidator DBTokenValidator, tokenString *string, i
 	c := claims.CustomerInfo
 
 	if len(claims.Address) > 0 && claims.Address != ip {
-		log.Errorf("Token bound ip is %s, but remote ip is %s", claims.Address, ip)
+		log.Errorf(nil, "Token bound ip is %s, but remote ip is %s", claims.Address, ip)
 		return nil, nil, errors.New("ERROR_INVALID_JWT_BOUND_IP")
 	}
 	if db != nil {
@@ -209,13 +209,13 @@ func VerifyTokenWityIP(dbTokenValidator DBTokenValidator, tokenString *string, i
 	}
 
 	if err != nil {
-		log.Errorf("Token %s is disabled for user %s", claims.Id, c.Username)
+		log.Errorf(nil, "Token %s is disabled for user %s", claims.Id, c.Username)
 		return nil, nil, errors.New("jwt is disabled")
 	} else if !validatorResult.TokenEnabled {
-		log.Errorf("token {%s} is disabled", claims.Id)
+		log.Errorf(nil, "token {%s} is disabled", claims.Id)
 		return nil, nil, errors.New(ERROR_TOKEN_DISABLED)
 	} else if !validatorResult.Enabled {
-		log.Errorf("user %s is disabled", c.Username)
+		log.Errorf(nil, "user %s is disabled", c.Username)
 		return nil, nil, errors.New(ERROR_USER_DISABLED)
 
 	}
@@ -264,14 +264,14 @@ func ValidateTokenAtDB(jti string) (types.SqlUuid, bool, error) {
 	var userID types.SqlUuid
 	var enabled bool
 
-	log.Debugf("ValidateTokenAtDB: Validating token %s", jti)
+	log.Debugln(nil, "ValidateTokenAtDB: Validating token %s", jti)
 	row := db.GetConnection().QueryRow(QueryJwtByJti, jti)
 
 	err := row.Scan(&userID, &enabled)
 
 	if err != nil {
 		serr := database.GetSqlError(err)
-		log.Errorf("ValidateTokenAtDB: error getting jti information from database: %+v", serr)
+		log.Errorf(nil, "ValidateTokenAtDB: error getting jti information from database: %+v", serr)
 		return types.SqlUuid{}, false, serr
 	}
 	return userID, enabled, nil

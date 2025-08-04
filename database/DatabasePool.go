@@ -27,16 +27,16 @@ func CreateDbPool(user, password, databaseName, host string, port, timeout uint1
 	result := DbPool{}
 	dbURI := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&timeout=%ds", user, password, host, port, databaseName, timeout)
 
-	log.Infof("Creating connection to %s:*******@tcp(%s:%d)/%s?parseTime=true&timeout=%ds", user, host, port, databaseName, timeout)
+	log.Infof(nil, "Creating connection to %s:*******@tcp(%s:%d)/%s?parseTime=true&timeout=%ds", user, host, port, databaseName, timeout)
 
 	result.pool, err = sql.Open("mysql", dbURI)
 	if err != nil {
-		log.Errorf("Failed openning database at {%s}: %+v", dbURI, err)
+		log.Errorf(nil, "Failed openning database at {%s}: %+v", dbURI, err)
 		return nil, errors.New("ERROR_OPENING_DATABASE", fmt.Sprintf("Failed openning database at {%s}: %+v", dbURI, err))
 	}
 
 	if err = result.pool.Ping(); err != nil {
-		log.Errorf("Cannot stablish connection with database: %+v", err)
+		log.Errorf(nil, "Cannot stablish connection with database: %+v", err)
 		return nil, errors.New("ERROR_DATABASE_UNREACHABLE", "Cannot stablish connection with database")
 	}
 
@@ -61,7 +61,7 @@ func (d *DbPool) BeginTx() (*sql.Tx, error) {
 
 	tx, err := d.pool.BeginTx(context.Background(), nil)
 	if err != nil {
-		log.Errorf("Error begining transaction: %+v", err)
+		log.Errorf(nil, "Error begining transaction: %+v", err)
 		return nil, errors.New("ERROR_BEGINING_TRANSACTION", fmt.Sprintf("Error begining transaction: %+v", err))
 	}
 
@@ -73,7 +73,7 @@ func (d *DbPool) BeginTx() (*sql.Tx, error) {
 func (d *DbPool) BeginEnhacedTx() (*EnhacedTx, error) {
 	tx, err := d.pool.BeginTx(context.Background(), nil)
 	if err != nil {
-		log.Errorf("Error begining Enhaced transaction: %+v", err)
+		log.Errorf(nil, "Error begining Enhaced transaction: %+v", err)
 		return nil, errors.New("ERROR_BEGINING_TRANSACTION", fmt.Sprintf("Error begining Enhaced transaction: %+v", err))
 	}
 

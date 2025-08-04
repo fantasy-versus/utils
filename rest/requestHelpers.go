@@ -13,7 +13,7 @@ func DecodeRequestIntoStruct(w http.ResponseWriter, r *http.Request, dest interf
 	body2, err := io.ReadAll(r.Body)
 
 	if err != nil {
-		log.Errorf("Error with received json, seems to be invalid: no extra inf. %+v", err)
+		log.Errorf(nil, "Error with received json, seems to be invalid: no extra inf. %+v", err)
 		ReturnRawError(w, "INVALID_DATA", "Review sent data", http.StatusForbidden)
 		return err
 	}
@@ -22,7 +22,7 @@ func DecodeRequestIntoStruct(w http.ResponseWriter, r *http.Request, dest interf
 	err = decoder.JsonNumberDecode(body2, &dest)
 
 	if err != nil {
-		log.Errorf("Error with received json, cannot be decoded into NewWalletUserDTO. %+v", err)
+		log.Errorf(nil, "Error with received json, cannot be decoded into NewWalletUserDTO. %+v", err)
 		ReturnRawError(w, "JSON_ERROR", err.Error(), http.StatusBadRequest)
 		return err
 	}

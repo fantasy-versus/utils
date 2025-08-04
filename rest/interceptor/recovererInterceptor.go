@@ -20,8 +20,8 @@ func Recoverer(next http.Handler) http.Handler {
 					panic(rvr)
 				}
 
-				log.Errorf("Recovering panic error: %+v", rvr)
-				log.Errorf("Stack: %+v", string(debug.Stack()))
+				log.Errorf(nil, "Recovering panic error: %+v", rvr)
+				log.Errorf(nil, "Stack: %+v", string(debug.Stack()))
 
 				if r.Header.Get("Connection") != "Upgrade" {
 					w.WriteHeader(http.StatusInternalServerError)

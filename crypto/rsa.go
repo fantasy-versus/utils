@@ -25,7 +25,7 @@ func RsaEncryptWithPublicKey(msg []byte, pub *rsa.PublicKey) ([]byte, error) {
 	hash := sha256.New()
 	ciphertext, err := rsa.EncryptOAEP(hash, rand.Reader, pub, msg, nil)
 	if err != nil {
-		log.Errorf("An error was raised encrypting: %+v", err)
+		log.Errorf(nil, "An error was raised encrypting: %+v", err)
 		return nil, err
 	}
 	return ciphertext, nil
@@ -36,7 +36,7 @@ func RsaDecryptWithPrivateKey(ciphertext []byte, priv *rsa.PrivateKey) []byte {
 	hash := sha256.New()
 	plaintext, err := rsa.DecryptOAEP(hash, rand.Reader, priv, ciphertext, nil)
 	if err != nil {
-		log.Printf("%+v", err)
+		log.Printf(nil, "%+v", err)
 	}
 	return plaintext
 }
@@ -47,13 +47,13 @@ func RsaGenerateAndStore(bitSize int, privateKeyFile, publicKeyFile string) (*rs
 
 	privateKey, err := RsaGeneratePrivateKey(bitSize)
 	if err != nil {
-		log.Errorf("Error generating private {%d} bits key. %+v", bitSize, err)
+		log.Errorf(nil, "Error generating private {%d} bits key. %+v", bitSize, err)
 		return nil, err
 	}
 
 	publicKeyBytes, err := RsaEncodePublicKeyToPEM(&privateKey.PublicKey)
 	if err != nil {
-		log.Errorf("Error encoding public key to PEM: %+v", err)
+		log.Errorf(nil, "Error encoding public key to PEM: %+v", err)
 		return nil, err
 	}
 
@@ -61,13 +61,13 @@ func RsaGenerateAndStore(bitSize int, privateKeyFile, publicKeyFile string) (*rs
 
 	err = writeKeyToFile(privateKeyBytes, privateKeyFile)
 	if err != nil {
-		log.Errorf("Error writting private key to {%s} file. %+v", privateKeyFile, err)
+		log.Errorf(nil, "Error writting private key to {%s} file. %+v", privateKeyFile, err)
 		return nil, err
 	}
 
 	err = writeKeyToFile(publicKeyBytes, publicKeyFile)
 	if err != nil {
-		log.Errorf("Error writting public key to {%s} file. %+v", privateKeyFile, err)
+		log.Errorf(nil, "Error writting public key to {%s} file. %+v", privateKeyFile, err)
 		return nil, err
 	}
 
@@ -88,7 +88,7 @@ func RsaGeneratePrivateKey(bitSize int) (*rsa.PrivateKey, error) {
 		return nil, err
 	}
 
-	log.Println("Private Key generated")
+	log.Println(nil, "Private Key generated")
 	return privateKey, nil
 }
 
@@ -116,7 +116,7 @@ func RsaEncodePublicKeyToPEM(rsaPublicKey *rsa.PublicKey) ([]byte, error) {
 	// Encode the public key as PEM format
 	pubKeyBytes, err := x509.MarshalPKIXPublicKey(rsaPublicKey)
 	if err != nil {
-		log.Errorf("Failed to encode public key: %+v", err)
+		log.Errorf(nil, "Failed to encode public key: %+v", err)
 		return nil, err
 	}
 
@@ -135,7 +135,7 @@ func writeKeyToFile(keyBytes []byte, saveFileTo string) error {
 		return err
 	}
 
-	log.Printf("Key saved to: %s", saveFileTo)
+	log.Printf(nil, "Key saved to: %s", saveFileTo)
 	return nil
 }
 
@@ -198,7 +198,7 @@ func RSACreatePairToPemFiles() (*string, *string, error) {
 	// Generate a new RSA private key with 2048 bits
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
-		log.Errorf("Error generating RSA private key: %+v", err)
+		log.Errorf(nil, "Error generating RSA private key: %+v", err)
 		return nil, nil, errors.New(errors.ErrorGeneratingRsa, "Error generating RSA private key")
 	}
 
@@ -222,7 +222,7 @@ func RSACreatePairToPemFiles() (*string, *string, error) {
 	publicKeyBuffer := bytes.NewBufferString("")
 	pem.Encode(publicKeyBuffer, publicKeyPEM)
 
-	log.Traceln("RSA key pair generated successfully!")
+	log.Traceln(nil, "RSA key pair generated successfully!")
 
 	return pointer.String(privateKeyBuffer.String()), pointer.String(publicKeyBuffer.String()), nil
 }

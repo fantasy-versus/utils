@@ -46,7 +46,7 @@ func (cont MiddlewareHandlerFunc) Intercept(mw MiddlewareInterceptor) Middleware
 	return func(writer http.ResponseWriter, request *http.Request) {
 		if request == nil {
 			writer.WriteHeader(http.StatusBadRequest)
-			log.Errorln(("***ERROR***: Missing Request"))
+			log.Errorln(nil, ("***ERROR***: Missing Request"))
 			return
 		} else {
 			mw(writer, request, http.HandlerFunc(cont))

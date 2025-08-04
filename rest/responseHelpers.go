@@ -35,11 +35,11 @@ func ReturnError(w http.ResponseWriter, err error, httpStatus int) {
 
 			fmt.Fprint(w, string(errorMessage))
 		} else {
-			log.Errorln("Use ReturnRawError instead of ReturnError")
+			log.Warnln(nil, "Use ReturnRawError instead of ReturnError")
 			ReturnRawError(w, err.Error(), err.Error(), httpStatus)
 		}
 	} else {
-		log.Errorf("Error is null, nothing written to response writter")
+		log.Errorf(nil, "Error is null, nothing written to response writter")
 	}
 }
 

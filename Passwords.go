@@ -3,9 +3,9 @@ package commons
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"log"
 	"unicode"
 
+	"github.com/fantasy-versus/utils/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -99,7 +99,7 @@ func HashAndSalt(pwd *[]byte) string {
 	// than the MinCost (4)
 	hash, err := bcrypt.GenerateFromPassword(*pwd, 5)
 	if err != nil {
-		log.Println(err)
+		log.Println(nil, err)
 	}
 	// GenerateFromPassword returns a byte slice so we need to
 	// convert the bytes to a string and return it
@@ -112,7 +112,7 @@ func ComparePasswords(hashedPwd string, plainPwd string) bool {
 	byteHash := []byte(hashedPwd)
 	err := bcrypt.CompareHashAndPassword(byteHash, []byte(plainPwd))
 	if err != nil {
-		log.Println(err)
+		log.Println(nil, err)
 		return false
 	}
 

@@ -68,11 +68,11 @@ func EncryptRaw(passphrase, plaintext []byte, salt []byte, iv []byte) (*EncryptR
 	}
 	b, err := aes.NewCipher(key)
 	if err != nil {
-		log.Errorf("Error creating new cipher.Block using derived key. %+v", err)
+		log.Errorf(nil, "Error creating new cipher.Block using derived key. %+v", err)
 	}
 	aesgcm, err := cipher.NewGCM(b)
 	if err != nil {
-		log.Errorf("Error getting the GCM from the cipher.Block. %+v", err)
+		log.Errorf(nil, "Error getting the GCM from the cipher.Block. %+v", err)
 	}
 	data := aesgcm.Seal(nil, iv, []byte(plaintext), nil)
 
@@ -93,28 +93,28 @@ func DecryptToBytes(passphrase, ciphertext string) []byte {
 
 	salt, err := hex.DecodeString(ciphertext[0:24])
 	if err != nil {
-		log.Errorf("Error decoding salt: %+v", err)
+		log.Errorf(nil, "Error decoding salt: %+v", err)
 	}
 	iv, err := hex.DecodeString(ciphertext[24:48])
 	if err != nil {
-		log.Errorf("Error decoding iv: %+v", err)
+		log.Errorf(nil, "Error decoding iv: %+v", err)
 	}
 	data, err := hex.DecodeString(ciphertext[48:])
 	if err != nil {
-		log.Errorf("Error decoding ciphertext: %+v", err)
+		log.Errorf(nil, "Error decoding ciphertext: %+v", err)
 	}
 	key, _ := DeriveKey([]byte(passphrase), salt)
 	b, err := aes.NewCipher(key)
 	if err != nil {
-		log.Errorf("Error creating New Cipher: %+v", err)
+		log.Errorf(nil, "Error creating New Cipher: %+v", err)
 	}
 	aesgcm, err := cipher.NewGCM(b)
 	if err != nil {
-		log.Errorf("Error creating new gcm: %+v", err)
+		log.Errorf(nil, "Error creating new gcm: %+v", err)
 	}
 	data, err = aesgcm.Open(nil, iv, data, nil)
 	if err != nil {
-		log.Errorf("Error executing final decoding: %+v", err)
+		log.Errorf(nil, "Error executing final decoding: %+v", err)
 	}
 	return data
 }
@@ -124,17 +124,17 @@ func DecryptRaw(passphrase, salt, initializationVector, ciphertext []byte) ([]by
 	key, _ := DeriveKey([]byte(passphrase), salt)
 	b, err := aes.NewCipher(key)
 	if err != nil {
-		log.Errorf("Error creating new cipher.Block using derived key. %+v", err)
+		log.Errorf(nil, "Error creating new cipher.Block using derived key. %+v", err)
 		return nil, err
 	}
 	aesgcm, err := cipher.NewGCM(b)
 	if err != nil {
-		log.Errorf("Error getting the GCM from the cipher.Block. %+v", err)
+		log.Errorf(nil, "Error getting the GCM from the cipher.Block. %+v", err)
 		return nil, err
 	}
 	data, err := aesgcm.Open(nil, initializationVector, ciphertext, nil)
 	if err != nil {
-		log.Errorf("Error decrypting and authenticating ciphertext. %+v", err)
+		log.Errorf(nil, "Error decrypting and authenticating ciphertext. %+v", err)
 		return nil, err
 	}
 

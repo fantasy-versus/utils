@@ -2,7 +2,6 @@ package net
 
 import (
 	"context"
-	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -10,6 +9,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/fantasy-versus/utils/log"
 )
 
 type IPV string
@@ -78,7 +79,7 @@ func ShutDown(reason string) {
 	if len(strings.TrimSpace(reason)) == 0 {
 		log.Print("Http server going down by request")
 	} else {
-		log.Printf("Http server going down by request. Reason: %s", reason)
+		log.Printf(nil, "Http server going down by request. Reason: %s", reason)
 	}
 	httpServer.Shutdown(context.Background())
 }

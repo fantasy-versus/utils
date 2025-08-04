@@ -18,12 +18,12 @@ import (
 func ManageUpdateError(callerName string, result sql.Result, err error) error {
 	if err != nil {
 		serr := GetSqlError(err)
-		log.Errorf("%s: Error persisting information at DB. %+v", callerName, serr)
+		log.Errorf(nil, "%s: Error persisting information at DB. %+v", callerName, serr)
 		return serr
 	}
 
 	if kk, _ := result.RowsAffected(); kk == 0 {
-		log.Errorf("%s: Nothing updated at database.", callerName)
+		log.Errorf(nil, "%s: Nothing updated at database.", callerName)
 		return errors.NewErrorNoRowsAffected("Nothing updated at database")
 	}
 

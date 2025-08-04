@@ -6,10 +6,11 @@ import (
 	b64 "encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"math/big"
 	"os"
 	"testing"
+
+	"github.com/fantasy-versus/utils/log"
 )
 
 type Example struct {
@@ -87,7 +88,7 @@ func getPrivateKey() *rsa.PrivateKey {
 	if parsedKey, err = x509.ParsePKCS1PrivateKey(privPemBytes); err != nil {
 		//If what you are sitting on is a PKCS#8 encoded key
 		if parsedKey, err = x509.ParsePKCS8PrivateKey(privPemBytes); err != nil { // note this returns type `interface{}`
-			log.Println("Unable to parse RSA private key, generating a temp one", err)
+			log.Println(nil, "Unable to parse RSA private key, generating a temp one", err)
 			return nil
 		}
 	}
@@ -96,7 +97,7 @@ func getPrivateKey() *rsa.PrivateKey {
 	var ok bool
 	privateKey, ok = parsedKey.(*rsa.PrivateKey)
 	if !ok {
-		log.Println("Unable to parse RSA private key, generating a temp one", err)
+		log.Println(nil, "Unable to parse RSA private key, generating a temp one", err)
 		return nil
 	}
 
@@ -106,30 +107,30 @@ func getPrivateKey() *rsa.PrivateKey {
 func getPublicKey() *rsa.PublicKey {
 	pub, err := os.ReadFile("/Users/alexlopez/dev/golang/ssl/jwt.rsa.pub")
 	if err != nil {
-		log.Println("No RSA public key found, generating temp one")
+		log.Println(nil, "No RSA public key found, generating temp one")
 		return nil
 	}
 	pubPem, _ := pem.Decode(pub)
 	if pubPem == nil {
-		log.Println("Use `ssh-keygen -f id_rsa.pub -e -m pem > id_rsa.pem` to generate the pem encoding of your RSA public key - rsa public key not in pem format")
+		log.Println(nil, "Use `ssh-keygen -f id_rsa.pub -e -m pem > id_rsa.pem` to generate the pem encoding of your RSA public key - rsa public key not in pem format")
 		return nil
 	}
 	fmt.Printf("%+v", pubPem.Type)
 	if pubPem.Type != "RSA PUBLIC KEY" {
-		log.Println("RSA public key is of the wrong type", pubPem.Type)
+		log.Println(nil, "RSA public key is of the wrong type", pubPem.Type)
 		return nil
 	}
 	var parsedKey interface{}
 	var ok bool
 
 	if parsedKey, err = x509.ParsePKIXPublicKey(pubPem.Bytes); err != nil {
-		log.Println("Unable to parse RSA public key, generating a temp one", err)
+		log.Println(nil, "Unable to parse RSA public key, generating a temp one", err)
 		return nil
 	}
 
 	var pubKey *rsa.PublicKey
 	if pubKey, ok = parsedKey.(*rsa.PublicKey); !ok {
-		log.Println("Unable to parse RSA public key, generating a temp one", err)
+		log.Println(nil, "Unable to parse RSA public key, generating a temp one", err)
 		return nil
 	}
 
