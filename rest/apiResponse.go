@@ -15,10 +15,10 @@ type Meta struct {
 
 // Pagination contains pagination information
 type Pagination struct {
-	Page       int `json:"page"`
-	PageSize   int `json:"pageSize"`
-	TotalPages int `json:"totalPages"`
-	TotalItems int `json:"totalItems"`
+	Page       uint32 `json:"page"`
+	PageSize   uint32 `json:"pageSize"`
+	TotalPages uint32 `json:"totalPages"`
+	TotalItems uint32 `json:"totalItems"`
 }
 
 // APIResponse es la estructura común para todas las respuestas
